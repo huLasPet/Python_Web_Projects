@@ -27,7 +27,6 @@ if __name__ == '__main__':
     """Running get news and getting performance stats for the 10 top items ordered by time."""
     with cProfile.Profile() as pr:
         get_news()
-
     stats = pstats.Stats(pr)
     stats.sort_stats(pstats.SortKey.TIME)
     stats.print_stats(10)
