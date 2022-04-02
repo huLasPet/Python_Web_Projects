@@ -1,6 +1,5 @@
-#TODO:
-#   1. Fix the class, this is for testing only
-#   2. Make a GUI to either open a file to process or type in some text
+# TODO:
+#   2. Make a GUI to either open a file to process or type in some text, select different voices
 #   3. Add option to save the file or just open it right away
 
 from boto3 import Session
@@ -14,56 +13,54 @@ import subprocess
 
 load_dotenv(r"C:\Users\hulaspet\DEV\Python_env\.env")
 
-text_to_read = "Some text here"
+# Temp place here, will have a GUI for it
+text_to_read = "This is just some random text here"
+voice_to_use = "Matthew"
 
 
 class TextToSpeech:
     def __init__(self):
         self.session = Session(aws_access_key_id=os.getenv("tts_key"), aws_secret_access_key=os.getenv("tts_secret"))
         self.polly = self.session.client("polly", region_name="eu-central-1")
+        self.output = None
+        self.response = None
 
-    def other(self):
+    def synth_request(self):
+        """Request voice synth and return the error if there is one."""
         try:
-            # Request speech synthesis
-            response = self.polly.synthesize_speech(Text=text_to_read, OutputFormat="mp3",
-                                               VoiceId="Matthew", Engine='neural')
-            print(response)
+            self.response = self.polly.synthesize_speech(Text=text_to_read, OutputFormat="mp3",
+                                                         VoiceId=voice_to_use, Engine='neural')
         except (BotoCoreError, ClientError) as error:
-            # The service returned an error, exit gracefully
             print(error)
             sys.exit(-1)
-        
-        # Access the audio stream from the response
-        if "AudioStream" in response:
-            # Note: Closing the stream is important because the service throttles on the
-            # number of parallel connections. Here we are using contextlib.closing to
-            # ensure the close method of the stream object will be called automatically
-            # at the end of the with statement's scope.
-            with closing(response["AudioStream"]) as stream:
-                output = os.path.join(gettempdir(), "speech.mp3")
-        
+
+    def audio_stream(self):
+        """Get the audio from the response
+        Exit if there is no audio or can't write the file"""
+        if "AudioStream" in self.response:
+            with closing(self.response["AudioStream"]) as stream:
+                self.output = os.path.join(gettempdir(), "speech.mp3")
                 try:
-                    # Open a file for writing the output as a binary stream
-                    with open(output, "wb") as file:
+                    with open(self.output, "wb") as file:
                         file.write(stream.read())
                 except IOError as error:
-                    # Could not write to file, exit gracefully
                     print(error)
                     sys.exit(-1)
-        
         else:
-            # The response didn't contain audio data, exit gracefully
             print("Could not stream audio")
             sys.exit(-1)
-        
-        # Play the audio using the platform's default player
+
+    def play_audio(self):
+        """Play the audio using the default player for the system"""
         if sys.platform == "win32":
-            os.startfile(output)
+            os.startfile(self.output)
         else:
-            # The following works on macOS and Linux. (Darwin = mac, xdg-open = linux).
             opener = "open" if sys.platform == "darwin" else "xdg-open"
-            subprocess.call([opener, output])
-    
+            subprocess.call([opener, self.output])
+
+
 if __name__ == "__main__":
     tts = TextToSpeech()
-    tts.other()
+    tts.synth_request()
+    tts.audio_stream()
+    tts.play_audio()
