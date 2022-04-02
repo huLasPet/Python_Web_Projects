@@ -16,6 +16,8 @@ load_dotenv(r"C:\Users\hulaspet\DEV\Python_env\.env")
 # Temp place here, will have a GUI for it
 text_to_read = "This is just some random text here"
 voice_to_use = "Matthew"
+voice_list = ["Olivia", "Matthew", "Amy", "Emma", "Brian", "Aria", "Ayanda", "Ivy", "Joanna", "Kendra", "Kimberly",
+              "Salli", "Joey", "Justin", "Kevin"]
 
 
 class TextToSpeech:
