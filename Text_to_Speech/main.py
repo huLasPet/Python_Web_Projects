@@ -28,7 +28,7 @@ class TextToSpeech:
 
     def get_file(self):
         """Opens a file browser to select the text file to be used for TTS."""
-        text_file = filedialog.askopenfile(parent=window, mode='r', title='Choose a file')
+        text_file = filedialog.askopenfile(parent=window, mode='r', title='Choose a file', filetypes=[("txt", "*.txt")])
         if text_file:
             self.tts_text = text_file.read()
             print(self.tts_text)
@@ -87,8 +87,6 @@ if __name__ == "__main__":
     tts = TextToSpeech()
 
     # Labels
-    text_button = tk.Button(text="Select the text file")
-    text_button.grid(column=0, row=1, sticky="w")
     dropdown_voice_label = tk.Label(text="Select a voice")
     dropdown_voice_label.grid(column=0, row=0, sticky="w")
 
