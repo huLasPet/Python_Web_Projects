@@ -2,8 +2,8 @@
 #   2. Fix /add to work with the DB, create other API calls as well
 #   3. Fix the new cafe form
 
-
-from flask import Flask, render_template
+import sqlalchemy
+from flask import Flask, render_template, jsonify
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, SelectField
@@ -40,7 +40,7 @@ class CafeForm(FlaskForm):
     cafe = StringField('Cafe name', validators=[DataRequired()])
     location = StringField('Location - Google Maps link', validators=[DataRequired(), URL()])
     location_name = StringField('Location name', validators=[DataRequired()])
-    image_url = StringField('Picture of the cafe', validators=[DataRequired()])
+    image_url = StringField('Picture of the cafe', validators=[DataRequired(), URL()])
     seats = StringField('# of seats', validators=[DataRequired()])
     toilet = SelectField('Can use toilet', validators=[DataRequired()], choices=["True", "False"])
     wifi = SelectField('Can use Wi-Fi', validators=[DataRequired()], choices=["True", "False"])
@@ -60,9 +60,21 @@ def home():
 def add_cafe():
     form = CafeForm()
     if form.validate_on_submit():
-        with open('cafe-data.csv', 'a', newline='', encoding="UTF-8") as csv_file:
-            csv_file.write(
-                f"\n{form.cafe.data},{form.location.data},{form.opens.data},{form.closes.data},{form.coffee.data},{form.wifi.data},{form.power.data}")
+        cafe_to_add = Cafe(can_take_calls=bool(form.calls.data),
+                           coffee_price=form.price.data,
+                           has_sockets=bool(form.power.data),
+                           has_toilet=bool(form.toilet.data),
+                           has_wifi=bool(form.wifi.data),
+                           img_url=form.image_url.data,
+                           location=form.location_name.data,
+                           map_url=form.location.data,
+                           name=form.cafe.data,
+                           seats=form.seats.data)
+        try:
+            db_sqlalchemy.session.add(cafe_to_add)
+            db_sqlalchemy.session.commit()
+        except sqlalchemy.exc.IntegrityError:
+            return jsonify(respnse={"error" : "Record already exists"})
         return render_template('add.html', form=form, submitted=True)
     return render_template('add.html', form=form, submitted=False)
 
