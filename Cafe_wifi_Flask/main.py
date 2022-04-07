@@ -37,16 +37,16 @@ class Cafe(db_sqlalchemy.Model):
 
 
 class CafeForm(FlaskForm):
-    cafe = StringField('Cafe name', validators=[DataRequired()])
-    location = StringField('Location - Google Maps link', validators=[DataRequired(), URL()])
-    location_name = StringField('Location name', validators=[DataRequired()])
-    image_url = StringField('Picture of the cafe', validators=[DataRequired(), URL()])
+    name = StringField('Cafe name', validators=[DataRequired()])
+    map_url = StringField('Location - Google Maps link', validators=[DataRequired(), URL()])
+    location = StringField('Location name', validators=[DataRequired()])
+    img_url = StringField('Picture of the cafe', validators=[DataRequired(), URL()])
     seats = StringField('# of seats', validators=[DataRequired()])
-    toilet = SelectField('Can use toilet', validators=[DataRequired()], choices=["True", "False"])
-    wifi = SelectField('Can use Wi-Fi', validators=[DataRequired()], choices=["True", "False"])
-    power = SelectField('Can charge device', validators=[DataRequired()], choices=["True", "False"])
-    price = StringField('Coffee price', validators=[DataRequired()])
-    calls = SelectField('Can take calls', validators=[DataRequired()], choices=["True", "False"])
+    has_toilet = SelectField('Can use toilet', validators=[DataRequired()], choices=["True", "False"])
+    has_wifi = SelectField('Can use Wi-Fi', validators=[DataRequired()], choices=["True", "False"])
+    has_sockets = SelectField('Can charge device', validators=[DataRequired()], choices=["True", "False"])
+    coffee_price = StringField('Coffee price', validators=[DataRequired()])
+    can_take_calls = SelectField('Can take calls', validators=[DataRequired()], choices=["True", "False"])
     submit = SubmitField()
 
 
@@ -61,15 +61,15 @@ def add_cafe():
     """Add a cafe to the site via a form."""
     form = CafeForm()
     if form.validate_on_submit():
-        cafe_to_add = Cafe(can_take_calls=bool(form.calls.data),
-                           coffee_price=form.price.data,
-                           has_sockets=bool(form.power.data),
-                           has_toilet=bool(form.toilet.data),
-                           has_wifi=bool(form.wifi.data),
-                           img_url=form.image_url.data,
-                           location=form.location_name.data,
-                           map_url=form.location.data,
-                           name=form.cafe.data,
+        cafe_to_add = Cafe(can_take_calls=bool(form.can_take_calls.data),
+                           coffee_price=form.coffee_price.data,
+                           has_sockets=bool(form.has_sockets.data),
+                           has_toilet=bool(form.has_toilet.data),
+                           has_wifi=bool(form.has_wifi.data),
+                           img_url=form.img_url.data,
+                           location=form.location.data,
+                           map_url=form.map_url.data,
+                           name=form.name.data,
                            seats=form.seats.data)
         try:
             db_sqlalchemy.session.add(cafe_to_add)
@@ -88,9 +88,40 @@ def delete_cafe(cafe_id):
     return redirect(url_for('cafes'))
 
 
-@app.route("/edit/<cafe_id>")
+@app.route("/edit/<cafe_id>", methods=["GET", "POST"])
 def edit_cafe(cafe_id):
-    pass
+    cafe_to_update = Cafe.query.get(cafe_id)
+    form = CafeForm(can_take_calls=cafe_to_update.can_take_calls,
+                    coffee_price=cafe_to_update.coffee_price,
+                    has_sockets=cafe_to_update.has_sockets,
+                    has_toilet=cafe_to_update.has_toilet,
+                    has_wifi=cafe_to_update.has_wifi,
+                    img_url=cafe_to_update.img_url,
+                    location=cafe_to_update.map_url,
+                    map_url=cafe_to_update.map_url,
+                    name=cafe_to_update.name,
+                    seats=cafe_to_update.seats)
+    if form.validate_on_submit():
+        try:
+            cafe_to_update.can_take_calls = bool(form.can_take_calls.data)
+            cafe_to_update.coffee_price = form.coffee_price.data
+            cafe_to_update.has_sockets = bool(form.has_sockets.data)
+            cafe_to_update.has_toilet = bool(form.has_toilet.data)
+            cafe_to_update.has_wifi = bool(form.has_wifi.data)
+            cafe_to_update.img_url = form.img_url.data
+            cafe_to_update.map_url = form.location.data
+            cafe_to_update.map_url = form.map_url.data
+            cafe_to_update.name = form.name.data
+            cafe_to_update.seats = form.seats.data
+            db_sqlalchemy.session.commit()
+
+#Check what other exception could be here
+        except sqlalchemy.exc.IntegrityError:
+            return jsonify(respnse={"error": "Record already exists"})
+        return render_template('edit.html', form=form, submitted=True)
+
+    return render_template('edit.html', form=form, submitted=False)
+
 
 
 @app.route('/cafes')
@@ -138,7 +169,7 @@ def api_delete_cafe(cafe_id):
     pass
 
 
-@app.route("api/edit/<cafe_id>")
+@app.route("/api/edit/<cafe_id>")
 def api_edit_cafe(cafe_id):
     pass
 
