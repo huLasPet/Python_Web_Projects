@@ -1,8 +1,9 @@
 # TODO:
-#   2. Fix /add to work with the DB, create other API calls as well
+#   2. Create API call to update/delete a cafe
+#   3. Create an API documentation in Postman
 
 import sqlalchemy
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, redirect, url_for
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, SelectField
@@ -79,6 +80,19 @@ def add_cafe():
     return render_template('add.html', form=form, submitted=False)
 
 
+@app.route("/delete/<cafe_id>")
+def delete_cafe(cafe_id):
+    cafe_to_delete = Cafe.query.get(cafe_id)
+    db_sqlalchemy.session.delete(cafe_to_delete)
+    db_sqlalchemy.session.commit()
+    return redirect(url_for('cafes'))
+
+
+@app.route("/edit/<cafe_id>")
+def edit_cafe(cafe_id):
+    pass
+
+
 @app.route('/cafes')
 def cafes():
     """List all cafes on the site."""
@@ -117,6 +131,16 @@ def api_add_cafe():
     except sqlalchemy.exc.IntegrityError:
         return jsonify(respnse={"error": "Record already exists"})
     return jsonify(respnse={"success": "Cafe added to the DB"})
+
+
+@app.route("/api/delete", methods=["POST"])
+def api_delete_cafe(cafe_id):
+    pass
+
+
+@app.route("api/edit/<cafe_id>")
+def api_edit_cafe(cafe_id):
+    pass
 
 
 if __name__ == '__main__':
