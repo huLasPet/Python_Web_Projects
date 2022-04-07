@@ -2,14 +2,12 @@
 #   2. Fix /add to work with the DB, create other API calls as well
 
 import sqlalchemy
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, SelectField
 from wtforms.validators import DataRequired, URL
 from flask_sqlalchemy import SQLAlchemy
-
-
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
@@ -32,6 +30,8 @@ class Cafe(db_sqlalchemy.Model):
     can_take_calls = db_sqlalchemy.Column(db_sqlalchemy.Boolean, nullable=False)
     seats = db_sqlalchemy.Column(db_sqlalchemy.String(250), nullable=False)
     coffee_price = db_sqlalchemy.Column(db_sqlalchemy.String(250), nullable=False)
+
+
 # db_sqlalchemy.create_all()
 
 
@@ -57,6 +57,7 @@ def home():
 
 @app.route('/add', methods=['GET', 'POST'])
 def add_cafe():
+    """Add a cafe to the site via a form."""
     form = CafeForm()
     if form.validate_on_submit():
         cafe_to_add = Cafe(can_take_calls=bool(form.calls.data),
@@ -73,17 +74,50 @@ def add_cafe():
             db_sqlalchemy.session.add(cafe_to_add)
             db_sqlalchemy.session.commit()
         except sqlalchemy.exc.IntegrityError:
-            return jsonify(respnse={"error" : "Record already exists"})
+            return jsonify(respnse={"error": "Record already exists"})
         return render_template('add.html', form=form, submitted=True)
     return render_template('add.html', form=form, submitted=False)
 
 
 @app.route('/cafes')
 def cafes():
+    """List all cafes on the site."""
     return render_template('cafes.html', cafes=Cafe.query.all())
+
+
+@app.route("/api/all", methods=["GET"])
+def all_cafes():
+    """Creates a list of dictionaries from the cafes in the DB
+    Creates a .json response from that list which returns the info for all cafes."""
+    all_cafes_list = []
+    cafe_dictionary = Cafe.query.all()
+    for cafe in cafe_dictionary:
+        temp = cafe.__dict__
+        del temp["_sa_instance_state"]
+        all_cafes_list.append(temp)
+    return jsonify(cafes=all_cafes_list)
+
+
+@app.route("/api/add", methods=["POST"])
+def api_add_cafe():
+    """/api/add?*args where the args are the entries below separated by &"""
+    cafe_to_add = Cafe(can_take_calls=bool(int(request.args.get("can_take_calls"))),
+                       coffee_price=request.args.get("coffee_price"),
+                       has_sockets=bool(int(request.args.get("has_sockets"))),
+                       has_toilet=bool(int(request.args.get("has_toilet"))),
+                       has_wifi=bool(int(request.args.get("has_wifi"))),
+                       img_url=request.args.get("img_url"),
+                       location=request.args.get("location"),
+                       map_url=request.args.get("map_url"),
+                       name=request.args.get("name"),
+                       seats=request.args.get("seats"))
+    try:
+        db_sqlalchemy.session.add(cafe_to_add)
+        db_sqlalchemy.session.commit()
+    except sqlalchemy.exc.IntegrityError:
+        return jsonify(respnse={"error": "Record already exists"})
+    return jsonify(respnse={"success": "Cafe added to the DB"})
 
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
