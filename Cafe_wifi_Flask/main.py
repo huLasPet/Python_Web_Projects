@@ -165,13 +165,30 @@ def api_add_cafe():
 
 
 @app.route("/api/delete", methods=["POST"])
-def api_delete_cafe(cafe_id):
-    pass
+def api_delete_cafe():
+    """/api/delete?id="""
+    cafe_id = request.args.get("id")
+    cafe_to_delete = Cafe.query.get(cafe_id)
+    db_sqlalchemy.session.delete(cafe_to_delete)
+    db_sqlalchemy.session.commit()
+    return "Done"
 
 
-@app.route("/api/edit/<cafe_id>")
-def api_edit_cafe(cafe_id):
-    pass
+@app.route("/api/edit/")
+def api_edit_cafe():
+    #Get ID, find the cafe in the DB based on the id and edit that cafe
+    cafe_id = request.args.get("id")
+    cafe_to_edit = Cafe.query.get(cafe_id)
+    XXXXXXXX = Cafe(can_take_calls=bool(int(request.args.get("can_take_calls"))),
+                       coffee_price=request.args.get("coffee_price"),
+                       has_sockets=bool(int(request.args.get("has_sockets"))),
+                       has_toilet=bool(int(request.args.get("has_toilet"))),
+                       has_wifi=bool(int(request.args.get("has_wifi"))),
+                       img_url=request.args.get("img_url"),
+                       location=request.args.get("location"),
+                       map_url=request.args.get("map_url"),
+                       name=request.args.get("name"),
+                       seats=request.args.get("seats"))
 
 
 if __name__ == '__main__':
