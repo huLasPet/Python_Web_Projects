@@ -1,6 +1,5 @@
 # TODO:
 #   2. Fix /add to work with the DB, create other API calls as well
-#   3. Fix the new cafe form
 
 import sqlalchemy
 from flask import Flask, render_template, jsonify
