@@ -192,4 +192,4 @@ def api_edit_cafe():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="192.168.0.24", port=5000, threaded=True, debug=True)
