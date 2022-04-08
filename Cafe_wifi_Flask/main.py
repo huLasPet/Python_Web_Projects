@@ -1,7 +1,3 @@
-# TODO:
-#   2. Create API call to update/delete a cafe
-#   3. Create an API documentation in Postman
-
 import sqlalchemy
 from flask import Flask, render_template, jsonify, request, redirect, url_for
 from flask_bootstrap import Bootstrap
@@ -20,6 +16,7 @@ db_sqlalchemy = SQLAlchemy(app)
 
 
 class Cafe(db_sqlalchemy.Model):
+    """The DB to be used."""
     id = db_sqlalchemy.Column(db_sqlalchemy.Integer, primary_key=True)
     name = db_sqlalchemy.Column(db_sqlalchemy.String(250), unique=True, nullable=False)
     map_url = db_sqlalchemy.Column(db_sqlalchemy.String(500), nullable=False)
@@ -31,12 +28,11 @@ class Cafe(db_sqlalchemy.Model):
     can_take_calls = db_sqlalchemy.Column(db_sqlalchemy.Boolean, nullable=False)
     seats = db_sqlalchemy.Column(db_sqlalchemy.String(250), nullable=False)
     coffee_price = db_sqlalchemy.Column(db_sqlalchemy.String(250), nullable=False)
-
-
 # db_sqlalchemy.create_all()
 
 
 class CafeForm(FlaskForm):
+    """The form to use when adding or editing Cafes."""
     name = StringField('Cafe name', validators=[DataRequired()])
     map_url = StringField('Location - Google Maps link', validators=[DataRequired(), URL()])
     location = StringField('Location name', validators=[DataRequired()])
@@ -74,14 +70,15 @@ def add_cafe():
         try:
             db_sqlalchemy.session.add(cafe_to_add)
             db_sqlalchemy.session.commit()
+            return redirect(url_for('cafes'))
         except sqlalchemy.exc.IntegrityError:
             return jsonify(respnse={"error": "Record already exists"})
-        return render_template('add.html', form=form, submitted=True)
     return render_template('add.html', form=form, submitted=False)
 
 
 @app.route("/delete/<cafe_id>")
 def delete_cafe(cafe_id):
+    """Delete a Cafe via the site."""
     cafe_to_delete = Cafe.query.get(cafe_id)
     db_sqlalchemy.session.delete(cafe_to_delete)
     db_sqlalchemy.session.commit()
@@ -90,6 +87,7 @@ def delete_cafe(cafe_id):
 
 @app.route("/edit/<cafe_id>", methods=["GET", "POST"])
 def edit_cafe(cafe_id):
+    """Edit a Cafe via the form on the site."""
     cafe_to_update = Cafe.query.get(cafe_id)
     form = CafeForm(can_take_calls=cafe_to_update.can_take_calls,
                     coffee_price=cafe_to_update.coffee_price,
@@ -114,12 +112,9 @@ def edit_cafe(cafe_id):
             cafe_to_update.name = form.name.data
             cafe_to_update.seats = form.seats.data
             db_sqlalchemy.session.commit()
-
-#Check what other exception could be here
+            return redirect(url_for('cafes'))
         except sqlalchemy.exc.IntegrityError:
             return jsonify(respnse={"error": "Record already exists"})
-        return render_template('edit.html', form=form, submitted=True)
-
     return render_template('edit.html', form=form, submitted=False)
 
 
@@ -132,8 +127,7 @@ def cafes():
 
 @app.route("/api/all", methods=["GET"])
 def all_cafes():
-    """Creates a list of dictionaries from the cafes in the DB
-    Creates a .json response from that list which returns the info for all cafes."""
+    """Get all Cafes from the DB via an API call - for documentation check the index page."""
     all_cafes_list = []
     cafe_dictionary = Cafe.query.all()
     for cafe in cafe_dictionary:
@@ -145,7 +139,7 @@ def all_cafes():
 
 @app.route("/api/add", methods=["POST"])
 def api_add_cafe():
-    """/api/add?*args where the args are the entries below separated by &"""
+    """Add a Cafe to the DB via an API call - for documentation check the index page."""
     cafe_to_add = Cafe(can_take_calls=bool(int(request.args.get("can_take_calls"))),
                        coffee_price=request.args.get("coffee_price"),
                        has_sockets=bool(int(request.args.get("has_sockets"))),
@@ -166,29 +160,37 @@ def api_add_cafe():
 
 @app.route("/api/delete", methods=["POST"])
 def api_delete_cafe():
-    """/api/delete?id="""
+    """Delete a Cafe from the DB via an API call - for documentation check the index page."""
     cafe_id = request.args.get("id")
     cafe_to_delete = Cafe.query.get(cafe_id)
-    db_sqlalchemy.session.delete(cafe_to_delete)
-    db_sqlalchemy.session.commit()
-    return "Done"
+    try:
+        db_sqlalchemy.session.delete(cafe_to_delete)
+        db_sqlalchemy.session.commit()
+        return jsonify(respnse={"success": "Record deleted"})
+    except sqlalchemy.orm.exc.UnmappedInstanceError:
+        return jsonify(respnse={"error": "Invalid ID"})
 
 
-@app.route("/api/edit/")
+@app.route("/api/edit", methods=["POST"])
 def api_edit_cafe():
-    #Get ID, find the cafe in the DB based on the id and edit that cafe
+    """Edit a Cafe in the DB via an API call - for documentation check the index page."""
     cafe_id = request.args.get("id")
     cafe_to_edit = Cafe.query.get(cafe_id)
-    XXXXXXXX = Cafe(can_take_calls=bool(int(request.args.get("can_take_calls"))),
-                       coffee_price=request.args.get("coffee_price"),
-                       has_sockets=bool(int(request.args.get("has_sockets"))),
-                       has_toilet=bool(int(request.args.get("has_toilet"))),
-                       has_wifi=bool(int(request.args.get("has_wifi"))),
-                       img_url=request.args.get("img_url"),
-                       location=request.args.get("location"),
-                       map_url=request.args.get("map_url"),
-                       name=request.args.get("name"),
-                       seats=request.args.get("seats"))
+    try:
+        cafe_to_edit.can_take_calls = bool(int(request.args.get("can_take_calls")))
+        cafe_to_edit.coffee_price = request.args.get("coffee_price")
+        cafe_to_edit.has_sockets = bool(int(request.args.get("has_sockets")))
+        cafe_to_edit.has_toilet = bool(int(request.args.get("has_toilet")))
+        cafe_to_edit.has_wifi = bool(int(request.args.get("has_wifi")))
+        cafe_to_edit.img_url = request.args.get("img_url")
+        cafe_to_edit.map_url = request.args.get("location")
+        cafe_to_edit.map_url = request.args.get("map_url")
+        cafe_to_edit.name = request.args.get("name")
+        cafe_to_edit.seats = request.args.get("seats")
+        db_sqlalchemy.session.commit()
+        return jsonify(respnse={"success": "Record edited"})
+    except AttributeError:
+        return jsonify(respnse={"error": "Invalid data"})
 
 
 if __name__ == '__main__':
