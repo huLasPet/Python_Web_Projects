@@ -28,6 +28,8 @@ class Cafe(db_sqlalchemy.Model):
     can_take_calls = db_sqlalchemy.Column(db_sqlalchemy.Boolean, nullable=False)
     seats = db_sqlalchemy.Column(db_sqlalchemy.String(250), nullable=False)
     coffee_price = db_sqlalchemy.Column(db_sqlalchemy.String(250), nullable=False)
+
+
 # db_sqlalchemy.create_all()
 
 
@@ -116,7 +118,6 @@ def edit_cafe(cafe_id):
         except sqlalchemy.exc.IntegrityError:
             return jsonify(respnse={"error": "Record already exists"})
     return render_template('edit.html', form=form, submitted=False)
-
 
 
 @app.route('/cafes')
