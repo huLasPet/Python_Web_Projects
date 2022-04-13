@@ -1,0 +1,26 @@
+{% load bootstrap4 %}
+{% bootstrap_css %}
+
+
+
+{% block styles %}
+<link rel="stylesheet" href="/static/css/styles.css">
+{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-sm-12 col-md-8">
+
+      <h1>Add a new cafe into the database</h1>
+
+      {{ wtf.quick_form(form, novalidate=True) }}
+      {% if submitted == True %}
+      <h3>Done</h3>
+      {% endif %}
+	  <p class="space-above"><a onclick='window.location.href="/cafes"'>See all cafes</a></p>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}

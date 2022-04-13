@@ -1,0 +1,21 @@
+<!--The super block loads all the styling from base.html and before the endblock we can add to it from the css file-->
+{% load bootstrap4 %}
+{% bootstrap_css %}
+
+{% block styles %}
+    <link rel="stylesheet" href="/static/css/styles.css">
+{% endblock %}
+{% block content %}
+<div class="jumbotron text-center">
+    <div class="container">
+  <h1 class="display-4">☕️ Coffee & Wifi 💻</h1>
+  <p class="lead">Want to work in a cafe but need power and wifi?</p>
+  <hr class="my-4">
+  <p>You've found the right place! Checkout my collection of cafes with data on power socket availability, wifi speed and coffee quality.</p>
+  <a class="btn btn-warning btn-lg" onclick='window.location.href="/cafes/all"' role="button">Show Me!</a>
+  <a class="btn btn-warning btn-lg" onclick='window.location.href="/cafes/add"' role="button">Add a Cafe!</a>
+  <a class="btn btn-warning btn-lg" onclick='window.location.href="https://documenter.getpostman.com/view/19281995/UVyxPsyZ"' role="button">API</a>
+</div>
+    </div>
+
+{% endblock %}
