@@ -44,7 +44,7 @@
                       <td><a href="{{ row.map_url }}">Link</a></td>
                       <td><a href="{{ row.img_url }}">Link</a></td>
                       <td><a href="{% url 'cafeapp:edit' row.id%}">Edit</a></td>
-                      <td><a href="{% url 'cafeapp:edit' row.id%}">Delete</a></td>
+                      <td><a href="{% url 'cafeapp:delete' row.id%}">Delete</a></td>
                   </tr>
               {% endfor %}
               </tbody>
