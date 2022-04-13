@@ -2,7 +2,6 @@
 {% bootstrap_css %}
 
 
-
 {% block styles %}
 <link rel="stylesheet" href="/static/css/styles.css">
 {% endblock %}
@@ -13,11 +12,27 @@
 
       <h1>Add a new cafe into the database</h1>
 
-      {{ wtf.quick_form(form, novalidate=True) }}
-      {% if submitted == True %}
-      <h3>Done</h3>
-      {% endif %}
-	  <p class="space-above"><a onclick='window.location.href="/cafes"'>See all cafes</a></p>
+
+      <form action="{% url 'cafeapp:all' %}" method="POST">
+        {% csrf_token %}
+        <fieldset>
+          {% for field in form %}
+          {% if field.id == "submit" %}
+          <tr>
+            <td>{{ field }}</td>
+          </tr>
+          {% else %}
+          <tr>
+            <th>{{ field.label }}</th>
+            <td>{{ field }}</td>
+            <br>
+          </tr>
+          {% endif %}
+          {% endfor %}
+        </fieldset>
+      </form>
+
+	  <p class="space-above"><a onclick='window.location.href="/cafes/all"'>See all cafes</a></p>
 
     </div>
   </div>
