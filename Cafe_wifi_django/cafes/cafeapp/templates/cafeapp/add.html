@@ -13,23 +13,16 @@
       <h1>Add a new cafe into the database</h1>
 
 
-      <form action="{% url 'cafeapp:all' %}" method="POST">
+
+
+      <form action="/cafes/add" method="post">
         {% csrf_token %}
-        <fieldset>
-          {% for field in form %}
-          {% if field.id == "submit" %}
-          <tr>
-            <td>{{ field }}</td>
-          </tr>
-          {% else %}
-          <tr>
-            <th>{{ field.label }}</th>
-            <td>{{ field }}</td>
-            <br>
-          </tr>
-          {% endif %}
-          {% endfor %}
-        </fieldset>
+        {% for field in form %}
+        <label for={{field}}>{{field}}</label>
+        <input name={{field}} value="{{ current_name }}">
+        <br>
+        {% endfor %}
+        <input type="submit" value="OK">
       </form>
 
 	  <p class="space-above"><a onclick='window.location.href="/cafes/all"'>See all cafes</a></p>
@@ -39,3 +32,4 @@
 </div>
 
 {% endblock %}
+
