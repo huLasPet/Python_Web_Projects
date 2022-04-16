@@ -19,7 +19,3 @@ class Cafe(models.Model):
         return self.name
 
 
-    #submit = SubmitField('Submit')
-
-    # def __str__(self):
-    #     return self.data

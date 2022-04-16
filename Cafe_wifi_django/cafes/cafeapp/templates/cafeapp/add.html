@@ -15,16 +15,11 @@
       <form action="/cafes/add" method="post">
         {% csrf_token %}
         {% for field in form %}
-        <label for={{field}}>{{field}}</label>
-        <input name={{field}} value="{{ current_value }}">
+        {{ field.label }} {{ field }}
         <br>
         {% endfor %}
         <input type="submit" value="OK">
       </form>
-      <div class="fieldWrapper">
-        <h1>This works, might need to create the form manually for each type</h1>{{ form.name.label }}
-      </div>
-
 	  <p class="space-above"><a onclick='window.location.href="/cafes/all"'>See all cafes</a></p>
 
     </div>

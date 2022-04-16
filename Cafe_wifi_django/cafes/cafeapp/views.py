@@ -1,8 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from .models import Cafe
-from .forms import CafeForm
+from .forms import CafeForm, EditCafeForm
 
 from django.http import HttpResponse
 
@@ -27,16 +27,9 @@ def add(request):
                            map_url=request.POST["map_url"],
                            name=request.POST["name"],
                            seats=request.POST["seats"])
-        print(cafe_to_add)
         cafe_to_add.save()
         return render(request, 'cafeapp/index.html')
-        # try:
-        #     db_sqlalchemy.session.add(cafe_to_add)
-        #     db_sqlalchemy.session.commit()
-        #     return redirect(url_for('cafes'))
-        # except sqlalchemy.exc.IntegrityError:
-        #     return jsonify(respnse={"error": "Record already exists"})
-    return render(request, 'cafeapp/add.html', {'form': form.fields})
+    return render(request, 'cafeapp/add.html', {'form': form})
 
 
 def all(request):
@@ -46,8 +39,23 @@ def all(request):
 
 
 def edit(request, id):
-    cafe_id = Cafe.objects.get(pk=id)
-    return render(request, 'cafeapp/edit.html')
+    if request.method == 'POST':
+        # cafe_to_edit = Cafe(can_take_calls=request.POST["can_take_calls"],
+        #                     coffee_price=request.POST["coffee_price"],
+        #                     has_sockets=request.POST["has_sockets"],
+        #                     has_toilet=request.POST["has_toilet"],
+        #                     has_wifi=request.POST["has_wifi"],
+        #                     img_url=request.POST["img_url"],
+        #                     location=request.POST["location"],
+        #                     map_url=request.POST["map_url"],
+        #                     name=request.POST["name"],
+        #                     seats=request.POST["seats"])
+        #cafe_to_edit.save()
+        print(request.POST)
+        return HttpResponseRedirect(reverse('cafeapp:all'))
+    cafe_to_edit = get_object_or_404(Cafe, id=id)
+    form = EditCafeForm(instance=cafe_to_edit)
+    return render(request, 'cafeapp/edit.html', {'form': form, "id": id})
 
 
 def delete(request, id):
