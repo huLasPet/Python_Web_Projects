@@ -8,5 +8,5 @@ urlpatterns = [
     path('cafes/add', views.add, name='add'),
     path('cafes/edit<int:id>', views.edit, name='edit'),
     path('cafes/delete<int:id>', views.delete, name='delete'),
-    path('cafes/all', views.all, name='all'),
+    path('cafes/all_cafes', views.all_cafes, name='all'),
 ]

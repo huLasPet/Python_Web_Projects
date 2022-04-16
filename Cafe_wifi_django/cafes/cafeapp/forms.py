@@ -19,5 +19,6 @@ class CafeForm(forms.Form):
 class EditCafeForm(forms.ModelForm):
     class Meta:
         model = Cafe
-        fields = ("name", "map_url", "location", "img_url", "seats", "coffee_price", "has_toilet", "has_wifi",
-                  "has_sockets", "can_take_calls")
+        fields = '__all__'
+        labels = {"can_take_calls": "Can take calls", "has_sockets": "Charging", "has_wifi": "WiFi",
+                  "has_toilet": "Toilet", "map_url": "Map link", "img_url": "Picture"}
