@@ -14,12 +14,18 @@
 
       <form action="{% url 'cafeapp:edit' id %}" method="post">
         {% csrf_token %}
-        {% for field in form %}
-        {{ field.label }} {{ field }}
-        <br>
-        {% endfor %}
+        <table class="table table-dark">
+          <tbody>
+          {% for field in form %}
+          <tr>
+            <td>{{ field.label }}</td><td>{{ field }}</td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
         <input type="submit" value="OK">
       </form>
+
       <p class="space-above"><a onclick='window.location.href="/cafes/all_cafes"'>See all cafes</a></p>
 
     </div>

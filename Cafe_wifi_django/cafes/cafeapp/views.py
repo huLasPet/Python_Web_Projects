@@ -1,8 +1,14 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+from rest_framework.decorators import api_view
 from .models import Cafe
 from .forms import CafeForm, EditCafeForm
+from rest_framework.response import Response
+from rest_framework import status
+from .serializers import CafeSerializer
+from rest_framework.views import APIView
+
 
 def index(request):
     return render(request, 'cafeapp/index.html')
@@ -55,3 +61,16 @@ def delete(request, id):
     cafe_id = Cafe.objects.get(pk=id)
     cafe_id.delete()
     return HttpResponseRedirect(reverse('cafeapp:all'))
+
+
+@api_view(('GET',))
+def api_get_all(*args):
+    cafes = Cafe.objects.all()
+    serializer = CafeSerializer(cafes, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(('GET',))
+def api_get_one(request, id):
+    cafes = Cafe.objects.get(pk=id)
+    serializer = CafeSerializer(cafes)
+    return Response(serializer.data, status=status.HTTP_200_OK)

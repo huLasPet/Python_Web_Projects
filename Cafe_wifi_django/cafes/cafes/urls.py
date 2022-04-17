@@ -18,5 +18,6 @@ from django.urls import path, include
 
 urlpatterns = [
     path('', include('cafeapp.urls')),
+    path('cafe-api/', include('rest_framework.urls')),
     path('admin/', admin.site.urls),
 ]
