@@ -38,9 +38,9 @@ class S3:
         for bucket in response['Buckets']:
             print(f'  {bucket["Name"]}')
 
-    def upload_file(self, bucket_name, source_file, target_name):
+    def upload_file(self, bucket_name, target_name):
         s3 = self.session.client('s3')
-        with open(source_file, "rb") as f:
+        with open(self.file_to_upload.name, "rb") as f:
             s3.upload_fileobj(f, bucket_name, target_name,
                               ExtraArgs={'ACL': 'public-read'})
 
@@ -51,6 +51,7 @@ class S3:
     def get_file(self):
         """Opens a file browser to select the text file to be used for TTS."""
         self.file_to_upload = filedialog.askopenfile(parent=window, mode='r', title='Choose a file')
+        print(self.file_to_upload.name)
 
 
 if __name__ == "__main__":
