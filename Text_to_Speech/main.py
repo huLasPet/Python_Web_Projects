@@ -91,7 +91,7 @@ if __name__ == "__main__":
     dropdown_voice_label.grid(column=0, row=0, sticky="w")
 
     # Entries
-    text_entry = tk.Entry(width=20)
+    text_entry = tk.Entry(width=18)
     text_entry.insert(index=0, string="or enter the text here")
     text_entry.grid(column=1, row=1, sticky="e")
 
