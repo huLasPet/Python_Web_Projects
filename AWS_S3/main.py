@@ -113,8 +113,5 @@ if __name__ == "__main__":
 
 
 
-    #aws_s3.upload_file("hulaspettest",
-    #                   "/Users/nbyy/Library/CloudStorage/OneDrive-Personal/Pictures/Screenshots/OculusScreenshot1610295573.jpeg",
-    #                   "screenshot.jpeg")
     #aws_s3.download_file("hulaspettest", "screenshot.jpeg", "/Users/nbyy/Downloads/screenshot.jpeg")
     window.mainloop()
