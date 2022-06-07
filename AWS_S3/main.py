@@ -28,12 +28,13 @@ class S3:
         self.file_to_upload = None
         self.download_path = None
         self.session = Session(aws_access_key_id=os.getenv("aws_s3_key"), aws_secret_access_key=os.getenv("aws_s3_secret"))
+        self.s3_client = self.session.client('s3')
 
     def create_bucket(self):
         try:
-            s3_client = self.session.client('s3', region_name=select_region.get())
+            self.s3_client = self.session.client('s3', region_name=select_region.get())
             location = {'LocationConstraint': select_region.get()}
-            s3_client.create_bucket(Bucket=bucket_entry.get(),
+            self.s3_client.create_bucket(Bucket=bucket_entry.get(),
                                         CreateBucketConfiguration=location)
         except ClientError as e:
             logging.error(e)
@@ -45,8 +46,7 @@ class S3:
         return True
 
     def list_buckets(self, tab):
-        s3_client = self.session.client('s3')
-        response = s3_client.list_buckets()
+        response = self.s3_client.list_buckets()
         self.existing_buckets.clear()
         for bucket in response['Buckets']:
             self.existing_buckets.append(bucket["Name"])
@@ -54,19 +54,20 @@ class S3:
         select_bucket_dropdown.grid(column=1, row=0, sticky="w")
 
     def upload_file(self):
-        s3 = self.session.client('s3')
         with open(self.file_to_upload.name, "rb") as f:
-            s3.upload_fileobj(f, select_bucket.get(), uploaded_file_name.get(),
+            self.s3_client.upload_fileobj(f, select_bucket.get(), uploaded_file_name.get(),
                               ExtraArgs={'ACL': 'public-read'})
         upload_status = tk.Label(tab2, text="Upload complete")
         upload_status.grid(column=2, row=1, sticky="w")
 
     def download_file(self):
         self.download_path = filedialog.asksaveasfile(parent=window, mode='w', title="Save to")
-        s3 = self.session.client('s3')
-        s3.bucket_file(select_bucket.get(), bucket_file.get(), self.download_path.name)
+        self.s3_client.bucket_file(select_bucket.get(), bucket_file.get(), self.download_path.name)
         download_status = tk.Label(tab3, text="Download complete")
         download_status.grid(column=2, row=1, sticky="w")
+        
+    def delete_object(self):
+        self.s3_client.delete_object(Bucket=select_bucket.get(), Key=bucket_file.get())
 
     def get_file(self):
         """Opens a file browser to select the file to upload."""
@@ -79,8 +80,7 @@ class S3:
             missing_selection = tk.Label(tab3, text="Select a bucket first.")
             missing_selection.grid(column=3, row=0, sticky="w")
         else:
-            list_object = self.session.client("s3")
-            listed_objects = list_object.list_objects_v2(Bucket=select_bucket.get())
+            listed_objects = self.s3_client.list_objects_v2(Bucket=select_bucket.get())
             self.uploaded_files.clear()
             for object in listed_objects["Contents"]:
                 self.uploaded_files.append(object["Key"])
@@ -89,7 +89,6 @@ class S3:
 
 
 if __name__ == "__main__":
-    tabtest = "tab3"
     aws_s3 = S3()
     window = tk.Tk()
     window.title("AWS S3 tool")
@@ -168,7 +167,7 @@ if __name__ == "__main__":
 #Tab4
     get_delete_files_button = tk.Button(tab4, text="Get file list", command=lambda: aws_s3.list_bucket_objects(tab4))
     get_delete_files_button.grid(column=2, row=0, sticky="w")
-    delete_start_button = tk.Button(tab4, text="Delete", command=aws_s3.download_file)
+    delete_start_button = tk.Button(tab4, text="Delete object", command=aws_s3.delete_object)
     delete_start_button.grid(column=3, row=3, sticky="w")
 
 
