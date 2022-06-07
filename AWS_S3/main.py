@@ -15,7 +15,7 @@ def on_tab_change(event):
     tab = event.widget.tab('current')['text']
     if tab == 'Download file':
         aws_s3.list_buckets(tab3)
-        aws_s3.list_bucket_objects(aws_s3.existing_buckets[0])
+        #aws_s3.list_bucket_objects(aws_s3.existing_buckets[0])
     elif tab == 'Upload file':
         aws_s3.list_buckets(tab2)
 
@@ -69,14 +69,19 @@ class S3:
         """Opens a file browser to select the file to upload or set a name when downloading."""
         self.file_to_use = filedialog.askopenfile(parent=window, mode='r', title='Choose a file')
 
-    def list_bucket_objects(self, bucket):
-        list_object = self.session.client("s3")
-        listed_objects = list_object.list_objects_v2(Bucket=bucket)
-        self.uploaded_files.clear()
-        for object in listed_objects["Contents"]:
-            self.uploaded_files.append(object["Key"])
-        self.download_file_dropdown = tk.OptionMenu(tab3, download_file, *aws_s3.uploaded_files)
-        self.download_file_dropdown.grid(column=1, row=1, sticky="w")
+    def list_bucket_objects(self):
+        bucket = select_bucket.get()
+        if bucket == "":
+            missing_selection = tk.Label(tab3, text="Select a bucket first.")
+            missing_selection.grid(column=3, row=0, sticky="w")
+        else:
+            list_object = self.session.client("s3")
+            listed_objects = list_object.list_objects_v2(Bucket=select_bucket.get())
+            self.uploaded_files.clear()
+            for object in listed_objects["Contents"]:
+                self.uploaded_files.append(object["Key"])
+            self.download_file_dropdown = tk.OptionMenu(tab3, download_file, *aws_s3.uploaded_files)
+            self.download_file_dropdown.grid(column=1, row=1, sticky="w")
 
 
 if __name__ == "__main__":
@@ -142,8 +147,10 @@ if __name__ == "__main__":
     upload_file_start = tk.Button(tab2, text="Start upload", command=aws_s3.upload_file)
     upload_file_start.grid(column=2, row=3, sticky="w")
 #Tab3
+    get_files_button = tk.Button(tab3, text="Get file list", command=aws_s3.list_bucket_objects)
+    get_files_button.grid(column=2, row=0, sticky="w")
     download_start_button = tk.Button(tab3, text="Download", command=aws_s3.download_file)
-    download_start_button.grid(column=2, row=0, sticky="w")
+    download_start_button.grid(column=2, row=3, sticky="w")
 
 
 
