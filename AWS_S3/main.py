@@ -15,16 +15,18 @@ def on_tab_change(event):
     tab = event.widget.tab('current')['text']
     if tab == 'Download file':
         aws_s3.list_buckets(tab3)
-        #aws_s3.list_bucket_objects(aws_s3.existing_buckets[0])
     elif tab == 'Upload file':
         aws_s3.list_buckets(tab2)
+    elif tab == "Delete object":
+        aws_s3.list_buckets(tab4)
 
 
 class S3:
     def __init__(self):
         self.existing_buckets = []
         self.uploaded_files = []
-        self.file_to_use = None
+        self.file_to_upload = None
+        self.download_path = None
         self.session = Session(aws_access_key_id=os.getenv("aws_s3_key"), aws_secret_access_key=os.getenv("aws_s3_secret"))
 
     def create_bucket(self):
@@ -53,23 +55,25 @@ class S3:
 
     def upload_file(self):
         s3 = self.session.client('s3')
-        with open(self.file_to_use.name, "rb") as f:
+        with open(self.file_to_upload.name, "rb") as f:
             s3.upload_fileobj(f, select_bucket.get(), uploaded_file_name.get(),
                               ExtraArgs={'ACL': 'public-read'})
         upload_status = tk.Label(tab2, text="Upload complete")
         upload_status.grid(column=2, row=1, sticky="w")
 
     def download_file(self):
+        self.download_path = filedialog.asksaveasfile(parent=window, mode='w', title="Save to")
         s3 = self.session.client('s3')
-        s3.download_file(select_bucket.get(), download_file.get(), "/Users/nbyy/Downloads/save_as.jpeg")
-        download_status = tk.Label(tab2, text="Download complete")
+        s3.bucket_file(select_bucket.get(), bucket_file.get(), self.download_path.name)
+        download_status = tk.Label(tab3, text="Download complete")
         download_status.grid(column=2, row=1, sticky="w")
 
     def get_file(self):
-        """Opens a file browser to select the file to upload or set a name when downloading."""
-        self.file_to_use = filedialog.askopenfile(parent=window, mode='r', title='Choose a file')
+        """Opens a file browser to select the file to upload."""
+        self.file_to_upload = filedialog.askopenfile(parent=window, mode='r', title='Choose a file')
 
-    def list_bucket_objects(self):
+
+    def list_bucket_objects(self, tab):
         bucket = select_bucket.get()
         if bucket == "":
             missing_selection = tk.Label(tab3, text="Select a bucket first.")
@@ -80,11 +84,12 @@ class S3:
             self.uploaded_files.clear()
             for object in listed_objects["Contents"]:
                 self.uploaded_files.append(object["Key"])
-            self.download_file_dropdown = tk.OptionMenu(tab3, download_file, *aws_s3.uploaded_files)
-            self.download_file_dropdown.grid(column=1, row=1, sticky="w")
+            self.bucket_file_dropdown = tk.OptionMenu(tab, bucket_file, *aws_s3.uploaded_files)
+            self.bucket_file_dropdown.grid(column=1, row=1, sticky="w")
 
 
 if __name__ == "__main__":
+    tabtest = "tab3"
     aws_s3 = S3()
     window = tk.Tk()
     window.title("AWS S3 tool")
@@ -92,16 +97,20 @@ if __name__ == "__main__":
     tab1 = ttk.Frame(tabControl)
     tab2 = ttk.Frame(tabControl)
     tab3 = ttk.Frame(tabControl)
+    tab4 = ttk.Frame(tabControl)
+    tab5 = ttk.Frame(tabControl)
     tabControl.add(tab1, text='Create bucket')
     tabControl.add(tab2, text='Upload file')
     tabControl.add(tab3, text='Download file')
+    tabControl.add(tab4, text='Delete object')
+    tabControl.add(tab5, text='Delete bucket')
     tabControl.pack(expand=1, fill="both")
 
 #Dropdown initial
     select_region = tk.StringVar(window)
     select_region.set("eu-central-1")
     select_bucket = tk.StringVar(window)
-    download_file = tk.StringVar(window)
+    bucket_file = tk.StringVar(window)
 
 #Labels
 #Tab1
@@ -120,6 +129,11 @@ if __name__ == "__main__":
     download_file_label = tk.Label(tab3, text="Select a file to download:")
     download_file_label.grid(column=0, row=1, sticky="w")
     download_bucket_select = tk.Label(tab3, text="Select a bucket to download from:")
+    download_bucket_select.grid(column=0, row=0, sticky="w")
+#Tab4
+    delete_file_label = tk.Label(tab4, text="Select a file to delete:")
+    delete_file_label.grid(column=0, row=1, sticky="w")
+    download_bucket_select = tk.Label(tab4, text="Select a bucket to delete from:")
     download_bucket_select.grid(column=0, row=0, sticky="w")
 
 
@@ -147,10 +161,15 @@ if __name__ == "__main__":
     upload_file_start = tk.Button(tab2, text="Start upload", command=aws_s3.upload_file)
     upload_file_start.grid(column=2, row=3, sticky="w")
 #Tab3
-    get_files_button = tk.Button(tab3, text="Get file list", command=aws_s3.list_bucket_objects)
+    get_files_button = tk.Button(tab3, text="Get file list", command=lambda: aws_s3.list_bucket_objects(tab3))
     get_files_button.grid(column=2, row=0, sticky="w")
     download_start_button = tk.Button(tab3, text="Download", command=aws_s3.download_file)
-    download_start_button.grid(column=2, row=3, sticky="w")
+    download_start_button.grid(column=3, row=3, sticky="w")
+#Tab4
+    get_delete_files_button = tk.Button(tab4, text="Get file list", command=lambda: aws_s3.list_bucket_objects(tab4))
+    get_delete_files_button.grid(column=2, row=0, sticky="w")
+    delete_start_button = tk.Button(tab4, text="Delete", command=aws_s3.download_file)
+    delete_start_button.grid(column=3, row=3, sticky="w")
 
 
 
