@@ -42,10 +42,10 @@ class S3:
                                         CreateBucketConfiguration=location)
         except ClientError as e:
             bucket_status = tk.Label(tab1, text=e.response["Error"]["Code"])
-            bucket_status.grid(column=6, row=0, sticky="w")
+            bucket_status.grid(column=2, row=0, sticky="w")
             return False
         bucket_status = tk.Label(tab1,text="Creation successful")
-        bucket_status.grid(column=5, row=0, sticky="w")
+        bucket_status.grid(column=2, row=0, sticky="w")
 
     def delete_bucket(self):
         """Tries to delete the bucket, displays the error if any and returns False in that case."""
@@ -59,7 +59,7 @@ class S3:
         bucket_status.grid(column=2, row=0, sticky="w")
 
 
-def list_buckets(self, tab):
+    def list_buckets(self, tab):
         """Displays the buckets as a dropdown, the passed tab refers to the number of the tab it should be on."""
         response = self.s3_client.list_buckets()
         self.existing_buckets.clear()
@@ -84,6 +84,9 @@ def list_buckets(self, tab):
         
     def delete_object(self):
         self.s3_client.delete_object(Bucket=select_bucket.get(), Key=bucket_file.get())
+        delete_status = tk.Label(tab3, text="Delete complete")
+        delete_status.grid(column=2, row=1, sticky="w")
+
 
     def get_file(self):
         """Opens a file browser to select the file to upload."""
