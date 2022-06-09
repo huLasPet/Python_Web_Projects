@@ -12,6 +12,7 @@ load_dotenv(r"/Users/nbyy/Library/CloudStorage/OneDrive-Personal/Python Round 2/
 REGION_LIST = ["us-east-1", "us-east-2", "us-west-1", "us-west-2", "eu-central-1"]
 
 def on_tab_change(event):
+    """Get a fresh bucket list when a tab is selected"""
     tab = event.widget.tab('current')['text']
     if tab == 'Download file':
         aws_s3.list_buckets(tab3)
@@ -33,6 +34,7 @@ class S3:
         self.s3_client = self.session.client('s3')
 
     def create_bucket(self):
+        """Tries to create a bucket, returns False and the error if there's any."""
         try:
             self.s3_client = self.session.client('s3', region_name=select_region.get())
             location = {'LocationConstraint': select_region.get()}
@@ -44,18 +46,21 @@ class S3:
             return False
         bucket_status = tk.Label(tab1,text="Creation successful")
         bucket_status.grid(column=5, row=0, sticky="w")
-        return True
 
     def delete_bucket(self):
+        """Tries to delete the bucket, displays the error if any and returns False in that case."""
         try:
             self.s3_client.delete_bucket(Bucket=select_bucket.get())
         except ClientError as e:
             bucket_status = tk.Label(tab5, text=e.response["Error"]["Message"])
-            bucket_status.grid(column=3, row=0, sticky="w")
+            bucket_status.grid(column=2, row=0, sticky="w")
             return False
+        bucket_status = tk.Label(tab5, text="Bucket deleted")
+        bucket_status.grid(column=2, row=0, sticky="w")
 
 
-    def list_buckets(self, tab):
+def list_buckets(self, tab):
+        """Displays the buckets as a dropdown, the passed tab refers to the number of the tab it should be on."""
         response = self.s3_client.list_buckets()
         self.existing_buckets.clear()
         for bucket in response['Buckets']:
@@ -71,6 +76,7 @@ class S3:
         upload_status.grid(column=2, row=1, sticky="w")
 
     def download_file(self):
+        """Opens a dialog for a path/filename and saves the file."""
         self.download_path = filedialog.asksaveasfile(parent=window, mode='w', title="Save to")
         self.s3_client.bucket_file(select_bucket.get(), bucket_file.get(), self.download_path.name)
         download_status = tk.Label(tab3, text="Download complete")
@@ -183,9 +189,7 @@ if __name__ == "__main__":
     delete_start_button.grid(column=3, row=3, sticky="w")
 #Tab5
     delete_bucket_button = tk.Button(tab5, text="Delete bucket", command=aws_s3.delete_bucket)
-    delete_bucket_button.grid(column=3, row=2, sticky="w")
-
-
+    delete_bucket_button.grid(column=2, row=2, sticky="w")
 
 
     tabControl.bind('<<NotebookTabChanged>>', on_tab_change)
