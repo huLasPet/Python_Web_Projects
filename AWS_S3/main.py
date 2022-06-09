@@ -19,6 +19,8 @@ def on_tab_change(event):
         aws_s3.list_buckets(tab2)
     elif tab == "Delete object":
         aws_s3.list_buckets(tab4)
+    elif tab == "Delete bucket":
+        aws_s3.list_buckets(tab5)
 
 
 class S3:
@@ -37,13 +39,21 @@ class S3:
             self.s3_client.create_bucket(Bucket=bucket_entry.get(),
                                         CreateBucketConfiguration=location)
         except ClientError as e:
-            logging.error(e)
-            bucket_status = tk.Label(text=e.response["Error"]["Code"])
+            bucket_status = tk.Label(tab1, text=e.response["Error"]["Code"])
             bucket_status.grid(column=6, row=0, sticky="w")
             return False
         bucket_status = tk.Label(tab1,text="Creation successful")
         bucket_status.grid(column=5, row=0, sticky="w")
         return True
+
+    def delete_bucket(self):
+        try:
+            self.s3_client.delete_bucket(Bucket=select_bucket.get())
+        except ClientError as e:
+            bucket_status = tk.Label(tab5, text=e.response["Error"]["Message"])
+            bucket_status.grid(column=3, row=0, sticky="w")
+            return False
+
 
     def list_buckets(self, tab):
         response = self.s3_client.list_buckets()
@@ -134,6 +144,9 @@ if __name__ == "__main__":
     delete_file_label.grid(column=0, row=1, sticky="w")
     download_bucket_select = tk.Label(tab4, text="Select a bucket to delete from:")
     download_bucket_select.grid(column=0, row=0, sticky="w")
+#Tab5
+    delete_bucket_label = tk.Label(tab5, text="Select the bucket to delete:")
+    delete_bucket_label.grid(column=0, row=0, sticky="w")
 
 
 
@@ -144,7 +157,6 @@ if __name__ == "__main__":
 #Tab2
     uploaded_file_name = tk.Entry(tab2, width=12)
     uploaded_file_name.grid(column=1, row=2, sticky="w")
-#Tab3
 
 
 
@@ -169,6 +181,9 @@ if __name__ == "__main__":
     get_delete_files_button.grid(column=2, row=0, sticky="w")
     delete_start_button = tk.Button(tab4, text="Delete object", command=aws_s3.delete_object)
     delete_start_button.grid(column=3, row=3, sticky="w")
+#Tab5
+    delete_bucket_button = tk.Button(tab5, text="Delete bucket", command=aws_s3.delete_bucket)
+    delete_bucket_button.grid(column=3, row=2, sticky="w")
 
 
 
